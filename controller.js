@@ -1,9 +1,10 @@
 "use strict";
 
+
 exports.mainPage = function(req, res) {
   res.json({
     message: "Allegrator 2016"
-  })
+  });
 };
 
 exports.computeImage = function(req, res) {

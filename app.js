@@ -4,7 +4,7 @@ let express = require("express");
 let app = express();
 let morgan = require("morgan");
 
-app.use(morgan("dev"));
+app.use(morgan("dev"))
 
 app.use("", require("./router"));
 
