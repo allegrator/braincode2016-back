@@ -4,10 +4,10 @@ let express = require("express");
 let app = express();
 let morgan = require("morgan");
 
-app.use(morgan("dev"))
+app.use(morgan("dev"));
 
 app.use("", require("./router"));
 
-app.listen(5000, () => {
+app.listen(5066, () => {
   console.log("Server Started!");
 });
