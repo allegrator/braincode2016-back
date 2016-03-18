@@ -8,6 +8,6 @@ app.use(morgan("dev"));
 
 app.use("", require("./router"));
 
-app.listen(5066, () => {
+app.listen(5000, () => {
   console.log("Server Started!");
 });

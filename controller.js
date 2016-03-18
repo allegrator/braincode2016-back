@@ -1,5 +1,6 @@
 "use strict";
 
+let showImg = require("./service/showimg");
 
 exports.mainPage = function(req, res) {
   res.json({
@@ -8,6 +9,19 @@ exports.mainPage = function(req, res) {
 };
 
 exports.computeImage = function(req, res) {
+
+  let file = req.file;
+
+  if (!file) {
+    res.send(400).json({
+      message: "File \"img\" required"
+    });
+  }
+
+  showImg(file.path);
+
+  console.log(file);
+
   res.json([{
     position: {
       x0: 0.25,
