@@ -46,6 +46,8 @@ import tensorflow as tf
 
 FLAGS = tf.app.flags.FLAGS
 
+file_ = open('results.txt', 'a', 0)
+
 # classify_image_graph_def.pb:
 #   Binary representation of the GraphDef protocol buffer.
 # imagenet_synset_to_human_label_map.txt:
@@ -66,6 +68,112 @@ tf.app.flags.DEFINE_integer('num_top_predictions', 5,
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 # pylint: enable=line-too-long
 
+global allegro_categories
+global id_to_uid
+id_to_uid = {}
+
+allegro_categories = {
+    # KEYBOARD
+    'n03085013': 4566,
+    'n03614007': 4566,
+    'n04036303': 4566,
+    'n04505470': 4566,
+
+    # COFFEE MAKER
+    'n03063338': 67431,
+    'n03297495': 67431,
+
+    # WATER
+    'n04557648': 112629,
+
+    # VEHICLE
+    'n04524313': 149,
+    'n02814533': 149,
+
+    # KOMBAJN
+    'n03496892': 252942,
+
+    # BIKE
+    'n03792782': 16420,
+
+    # RIFLE
+    'n04090263': 253883,
+
+    # COMPUTER
+    'n03485407': 491,
+    'n03832673': 491,
+    'n03642806': 491,
+    'n03180011': 491,
+
+    # WALLET
+    'n04548362': 1490,
+    'n04026417': 1490,
+
+    # # TV SYSTEM
+    # 'n04404412':
+
+    # # MONITOR
+    # 'n03782006': 
+
+    # # iPOD / Phone
+    'n03584254': 165,
+
+    # # RADIATOR
+    'n04040759': 111865,
+
+    # # CUP
+    'n07930864': 110879,
+    'n03063599': 110879,
+
+    # # WELCOME MAT
+    'n03223299': 123,
+
+    # # BANANA
+    # 'n07753592': 
+
+    # # CHAIR
+    'n03376595': 112737,
+
+    # PEN
+    'n03908618': 64509,
+    'n02783161': 64509,
+
+    # BACKPACK
+    'n02769748': 102858,
+
+    # TABLE
+    'n03201208': 1515,
+
+    # SPEAKER
+    'n03691459': 11,
+
+    # WALL CLOCK
+    'n04548280': 541,
+
+    # JEANS
+    'n03594734': 76093,
+
+    # PROJEKTOR
+    'n04009552': 5111,
+
+    # BOOTS
+    'n03124043': 1469,
+    'n03047690': 1469,
+
+
+    # MONITOR
+    'n03782006': 4317,
+
+    # KAWA
+    'n07920052': 74035,
+
+    # BOOKS
+    'n07248320': 7,
+
+    # NOTES
+    'n02840245': 28496
+
+  }
 
 class NodeLookup(object):
   """Converts integer node ID's to human readable labels."""
@@ -103,6 +211,7 @@ class NodeLookup(object):
     for line in proto_as_ascii_lines:
       parsed_items = p.findall(line)
       uid = parsed_items[0]
+      print(uid)
       human_string = parsed_items[2]
       uid_to_human[uid] = human_string
 
@@ -115,6 +224,9 @@ class NodeLookup(object):
       if line.startswith('  target_class_string:'):
         target_class_string = line.split(': ')[1]
         node_id_to_uid[target_class] = target_class_string[1:-2]
+        id_to_uid[target_class] = target_class_string[1:-2]
+        print(target_class)
+        print(target_class_string[1:-2])
 
     # Loads the final mapping of integer node ID to human-readable string
     node_id_to_name = {}
@@ -127,9 +239,16 @@ class NodeLookup(object):
     return node_id_to_name
 
   def id_to_string(self, node_id):
+    # print(node_id)
     if node_id not in self.node_lookup:
       return ''
     return self.node_lookup[node_id]
+  def allegro_category(self, node_id):
+    print(id_to_uid[node_id])
+    id = id_to_uid[node_id]
+    if(id not in allegro_categories):
+      return None
+    return allegro_categories[id]
 
 
 def create_graph():
@@ -140,6 +259,7 @@ def create_graph():
     graph_def = tf.GraphDef()
     graph_def.ParseFromString(f.read())
     _ = tf.import_graph_def(graph_def, name='')
+
 
 node_lookup = NodeLookup()
 
@@ -180,9 +300,14 @@ def run_inference_on_image(image):
     top_k = predictions.argsort()[-FLAGS.num_top_predictions:][::-1]
     for node_id in top_k:
       human_string = node_lookup.id_to_string(node_id)
+      allegro_category_id = node_lookup.allegro_category(node_id)
+
       score = predictions[node_id]
       print('%s (score = %.5f)' % (human_string, score))
-      return { 'name': human_string }
+      print(node_id)
+      print(allegro_category_id)
+      file_.write(id_to_uid[node_id] + ": " + human_string + "\n")
+      return { 'name': human_string, 'category_id': allegro_category_id }
 
 
 
@@ -226,7 +351,7 @@ def main(_):
   maybe_download_and_extract()
   image = (FLAGS.image_file if FLAGS.image_file else
            os.path.join(FLAGS.model_dir, 'cropped_panda.jpg'))
-  run_inference_on_image(image)
+  computeName(image)
 
 
 if __name__ == '__main__':
